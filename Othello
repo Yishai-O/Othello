@@ -1,0 +1,587 @@
+import java.util.Scanner;
+import java.io.*;
+
+public class Othello {
+  private static int[][] arr;
+  private static boolean halt = false;
+  private static boolean up = false;
+  private static boolean down = false;
+  private static boolean left = false;
+  private static boolean right = false;
+  private static boolean upRight = false;
+  private static boolean upLeft = false;
+  private static boolean downRight = false;
+  private static boolean downLeft = false;
+  private static boolean valid = false;
+  private static boolean currPlayer = false;
+  private static int temp = -1;
+  private static boolean test = false;
+  public static void main(String[] args) {
+    start();
+    format();
+    if ((int)(Math.random() * 2) == 0)
+    {
+      System.out.println("You go second.");
+      while (halt == false)
+      {
+        compTurn();
+        format();
+        end();
+        playerTurn();
+        format();
+        end();
+      }
+    }
+    else
+    {
+      System.out.println("You go first.");
+      while (halt == false)
+      {
+        playerTurn();
+        format();
+        end();
+        compTurn();
+        format();
+        end();
+      }
+    }
+  }
+
+  public static void start()
+  {
+    System.out.println("You are the blue 0's and the computer is the red 0's.");
+    System.out.println();
+    arr = new int[8][8];
+    for (int i = 0; i < arr.length; i++)
+      {
+        for (int j = 0; j < arr[0].length; j++)
+          {
+            arr[i][j] = -1;
+          }
+      }
+    arr[3][3] = 1;
+    arr[3][4] = 0;
+    arr[4][3] = 0;
+    arr[4][4] = 1;
+  }
+
+  public static void format()
+  {
+    System.out.println("  1  2  3  4  5  6  7  8");
+    for (int i = 0; i < arr.length; i++)
+      {
+        System.out.print(i+1);
+        for (int j = 0; j < arr[0].length; j++)
+          {
+            if (arr[i][j] == 0)
+            {
+              System.out.print("[\u001B[31m0\u001B[0m]");
+            }
+
+            else if (arr[i][j] == 1)
+            {
+              System.out.print("[\u001B[34m0\u001B[0m]");
+            }
+            else
+            {
+              System.out.print("[ ]");
+            }
+          }
+        System.out.println();
+      }
+  }
+
+  public static boolean allowed(int row, int col)
+  {
+    if (arr[row][col] != -1)
+    {
+      return false;
+    }
+    else
+    {
+      if (!test)
+      {
+        if (currPlayer)
+        {
+          arr[row][col] = 1;
+        }
+        else
+        {
+          arr[row][col] = 0;
+        }
+      }
+      else
+      {
+        if (currPlayer)
+        {
+          arr[row][col] = 0;
+        }
+        else
+        {
+          arr[row][col] = 1;
+        }
+      }
+
+      right = false;
+      valid = false;
+      for (int i = col + 1; i < arr[0].length; i++)
+      {
+        if (arr[row][i] == -1)
+        {
+          break;
+        }
+        else if (arr[row][i] != arr[row][col])
+        {
+          valid = true;
+        }
+        else if ((arr[row][i] == arr[row][col]) && valid)
+        {
+          right = true;
+          break;
+        }
+        else
+        {
+          break;
+        }
+      }
+
+      left = false;
+      valid = false;
+      for (int i = col - 1; i >= 0; i--)
+      {
+        if (arr[row][i] == -1)
+        {
+          break;
+        }
+        else if (arr[row][i] != arr[row][col])
+        {
+          valid = true;
+        }
+        else if ((arr[row][i] == arr[row][col]) && valid)
+        {
+          left = true;
+          break;
+        }
+        else
+        {
+          break;
+        }
+      }
+
+      down = false;
+      valid = false;
+      for (int i = row + 1; i < arr.length; i++)
+      {
+        if (arr[i][col] == -1)
+        {
+          break;
+        }
+        else if (arr[i][col] != arr[row][col])
+        {
+          valid = true;
+        }
+        else if ((arr[i][col] == arr[row][col]) && valid)
+        {
+          down = true;
+          break;
+        }
+        else
+        {
+          break;
+        }
+      }
+
+      up = false;
+      valid = false;
+      for (int i = row - 1; i >= 0; i--)
+      {
+        if (arr[i][col] == -1)
+        {
+          break;
+        }
+        else if (arr[i][col] != arr[row][col])
+        {
+          valid = true;
+        }
+        else if ((arr[i][col] == arr[row][col]) && valid)
+        {
+          up = true;
+          break;
+        }
+        else
+        {
+          break;
+        }
+      }
+
+      upRight = false;
+      upLeft = false;
+      downRight = false;
+      downLeft = false;
+
+      int maxIdxUpRight = Math.min(row, 7 - col);
+      int maxIdxUpLeft = Math.min(row, col);
+      int maxIdxDownRight = Math.min(7 - row, 7 - col);
+      int maxIdxDownLeft = Math.min(7 - row, col);
+
+      valid = false;
+      for (int i = 1; i < maxIdxUpRight; i++)
+      {
+        if (arr[row - i][col + i] == -1)
+        {
+          break;
+        }
+        else if (arr[row - i][col + i] != arr[row][col])
+        {
+          valid = true;
+        }
+        else if ((arr[row - i][col + i] == arr[row][col]) && valid)
+        {
+          upRight = true;
+          break;
+        }
+        else
+        {
+          break;
+        }
+      }
+
+      valid = false;
+      for (int i = 1; i < maxIdxUpLeft; i++)
+      {
+        if (arr[row - i][col - i] == -1)
+        {
+          break;
+        }
+        else if (arr[row - i][col - i] != arr[row][col])
+        {
+          valid = true;
+        }
+        else if ((arr[row - i][col - i] == arr[row][col]) && valid)
+        {
+          upLeft = true;
+          break;
+        }
+        else
+        {
+          break;
+        }
+      }
+
+      valid = false;
+      for (int i = 1; i < maxIdxDownRight; i++)
+      {
+        if (arr[row + i][col + i] == -1)
+        {
+          break;
+        }
+        else if (arr[row + i][col + i] != arr[row][col])
+        {
+          valid = true;
+        }
+        else if ((arr[row + i][col + i] == arr[row][col]) && valid)
+        {
+          downRight = true;
+          break;
+        }
+        else
+        {
+          break;
+        }
+      }
+
+      valid = false;
+      for (int i = 1; i < maxIdxDownLeft; i++)
+      {
+        if (arr[row + i][col - i] == -1)
+        {
+          break;
+        }
+        else if (arr[row + i][col - i] != arr[row][col])
+        {
+          valid = true;
+        }
+        else if ((arr[row + i][col - i] == arr[row][col]) && valid)
+        {
+          downLeft = true;
+          break;
+        }
+        else
+        {
+          break;
+        }
+      }
+
+      if (!(right || left || up || down || upRight || upLeft || downRight || downLeft))
+      {
+        arr[row][col] = -1;
+        return false;
+      }
+      else
+      {
+        arr[row][col] = -1;
+        return true;
+      }
+    }
+  }
+
+  public static void play(int row, int col)
+  {
+    if (currPlayer)
+    {
+      temp = 1;
+    }
+    else
+    {
+      temp = 0;
+    }
+    allowed(row, col);
+    arr[row][col] = temp;
+    if (right)
+    {
+      for (int i = col + 1; i < arr[0].length; i++)
+        {
+          if (arr[row][i] != arr[row][col])
+          {
+            arr[row][i] = arr[row][col];
+          }
+          else if (arr[row][i] == arr[row][col])
+          {
+            right = false;
+            break;
+          }
+        }
+    }
+    if (left)
+    {
+      for (int i = col - 1; i >= 0; i--)
+      {
+        if (arr[row][i] != arr[row][col])
+        {
+          arr[row][i] = arr[row][col];
+        }
+        else if (arr[row][i] == arr[row][col])
+        {
+          left = false;
+          break;
+        }
+      }
+    }
+    if (up)
+    {
+      for (int i = row - 1; i >= 0; i--)
+      {
+        if (arr[i][col] != arr[row][col])
+        {
+          arr[i][col] = arr[row][col];
+        }
+        else if (arr[i][col] == arr[row][col])
+        {
+          up = false;
+          break;
+        }
+      }
+    }
+    if (down)
+    {
+      for (int i = row + 1; i < arr.length; i++)
+      {
+        if (arr[i][col] != arr[row][col])
+        {
+          arr[i][col] = arr[row][col];
+        }
+        else if (arr[i][col] == arr[row][col])
+        {
+          down = false;
+          break;
+        }
+      }
+    }
+    if (upRight)
+    {
+      int maxIdxUpRight = Math.min(row, 7 - col);
+      for (int i = 1; i < maxIdxUpRight; i++)
+      {
+        if (arr[row - i][col + 1] != arr[row][col])
+        {
+          arr[row - 1][col + 1] = arr[row][col];
+        }
+        else if (arr[row - i][col + 1] == arr[row][col])
+        {
+          upRight = false;
+          break;
+        }
+      }
+    }
+    if (upLeft)
+    {
+      int maxIdxUpLeft = Math.min(row, col);
+      for (int i = 1; i < maxIdxUpLeft; i++)
+      {
+        if (arr[row - i][col - 1] != arr[row][col])
+        {
+          arr[row - 1][col - 1] = arr[row][col];
+        }
+        else if (arr[row - i][col - 1] == arr[row][col])
+        {
+          upLeft = false;
+          break;
+        }
+      }
+    }
+    if (downRight)
+    {
+      int maxIdxDownRight = Math.min(7 - row, 7 - col);
+      for (int i = 1; i < maxIdxDownRight; i++)
+      {
+        if (arr[row + i][col + 1] != arr[row][col])
+        {
+          arr[row + 1][col + 1] = arr[row][col];
+        }
+        else if (arr[row + i][col + 1] == arr[row][col])
+        {
+          downRight = false;
+          break;
+        }
+      }
+    }
+    if (downLeft)
+    {
+      int maxIdxDownLeft = Math.min(7 - row, col);
+      for (int i = 1; i < maxIdxDownLeft; i++)
+      {
+        if (arr[row + i][col - 1] != arr[row][col])
+        {
+          arr[row + 1][col - 1] = arr[row][col];
+        }
+        else if (arr[row + i][col - 1] == arr[row][col])
+        {
+          downLeft = false;
+          break;
+        }
+      }
+    }
+    clear();
+  }
+
+  public static void compTurn()
+  {
+    currPlayer = false;
+    int row = (int)(Math.random() * 8);
+    int col = (int)(Math.random() * 8);
+    while (allowed(row, col) == false)
+    {
+      clear();
+      row = (int)(Math.random() * 8);
+      col = (int)(Math.random() * 8);
+    }
+    arr[row][col] = 0;
+    System.out.println("The computer chose row " + (row + 1) + " and column " + (col + 1) + ".");
+    play(row, col);
+  }
+
+  public static void playerTurn()
+  {
+    currPlayer = true;
+    Scanner scan = new Scanner(System.in);
+    System.out.print("Enter a row: ");
+    int row = scan.nextInt();
+    System.out.print("Enter a column: ");
+    int col = scan.nextInt();
+    if (row > 8 || row < 1 || col > 8 || col < 1)
+    {
+      System.out.println("Invalid move.");
+      playerTurn();
+    }
+    else if (allowed(row - 1, col - 1))
+    {
+      arr[row - 1][col - 1] = 1;
+      play(row - 1, col - 1);
+    }
+    else
+    {
+      System.out.println("Invalid move.");
+      playerTurn();
+    }
+  }
+
+  public static void end()
+  {
+    boolean stop = true;
+    for (int i = 0; i < arr.length; i++)
+      {
+        for (int j = 0; j < arr[0].length; j++)
+          {
+            test = true;
+            if (arr[i][j] == -1)
+            {
+              if (allowed(i, j))
+              {
+                clear();
+                stop = false;
+                i = arr.length;
+                j = arr.length;
+                break;
+              }
+              arr[i][j] = -1;
+            }
+          }
+      }
+    test = false;
+    if (stop)
+    {
+      halt = true;
+      int zeroCount = 0;
+      int oneCount = 0;
+      for (int i = 0; i < arr.length; i++)
+      {
+        for (int j = 0; j < arr[0].length; j++)
+          {
+            if (arr[i][j] == 0)
+            {
+              zeroCount++;
+            }
+          }
+      }
+      for (int i = 0; i < arr.length; i++)
+      {
+        for (int j = 0; j < arr[0].length; j++)
+          {
+            if (arr[i][j] == 1)
+            {
+              oneCount++;
+            }
+          }
+      }
+      System.out.print("\033[H\033[2J");
+      System.out.flush();
+      format();
+      System.out.println("\u001B[31m" + zeroCount + "\u001B[0m - \u001B[34m" + oneCount + "\u001B[0m");
+      if (zeroCount < oneCount)
+        {
+        System.out.println("You win!");
+        }
+      else if (zeroCount > oneCount)
+    {
+      System.out.println("You lose!");
+    }
+      else
+      {
+        System.out.println("Tie!");
+      }
+    }
+  }
+
+  public static void clear()
+  {
+    up = false;
+    down = false;
+    left = false;
+    right = false;
+    upRight = false;
+    upLeft = false;
+    downRight = false;
+    downLeft = false;
+    valid = false;
+  }
+}
